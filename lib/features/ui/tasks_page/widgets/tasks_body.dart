@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -317,12 +319,7 @@ class _TasksBodyState extends State<TasksBody> {
         displayXorO[index] = 'O';
         oTurn = !oTurn;
       }
-      // else if (!oTurn && displayXorO[index] == '') {
-      //   displayXorO[index] = 'X';
-      //   oTurn = !oTurn;
-      // }
       _checkWinner();
-
     });
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -331,80 +328,84 @@ class _TasksBodyState extends State<TasksBody> {
     }
   }
 
-
   void _makeComputerMove() {
+    List<int> emptyBoxes = [];
+
     setState(() {
       for (int i = 0; i < displayXorO.length; i++) {
         if (displayXorO[i] == '') {
-          displayXorO[i] = 'X';
-          oTurn = !oTurn;
-          _checkWinner();
-          break;
+          emptyBoxes.add(i);
         }
+      }
+
+      if (emptyBoxes.isNotEmpty) {
+        int randomIndex = Random().nextInt(emptyBoxes.length);
+        int computerMoveIndex = emptyBoxes[randomIndex];
+        displayXorO[computerMoveIndex] = 'X';
+        oTurn = !oTurn;
+        _checkWinner();
       }
     });
   }
 
   void _checkWinner() {
+    //Rows
+    if (displayXorO[0] != '' &&
+        displayXorO[0] == displayXorO[1] &&
+        displayXorO[0] == displayXorO[2]) {
+      _showWinningDialog(winner: displayXorO[0]);
+    }
 
-      //Rows
-      if (displayXorO[0] != '' &&
-          displayXorO[0] == displayXorO[1] &&
-          displayXorO[0] == displayXorO[2]) {
-        _showWinningDialog(winner: displayXorO[0]);
-      }
+    if (displayXorO[3] != '' &&
+        displayXorO[3] == displayXorO[4] &&
+        displayXorO[3] == displayXorO[5]) {
+      _showWinningDialog(winner: displayXorO[3]);
+    }
 
-      if (displayXorO[3] != '' &&
-          displayXorO[3] == displayXorO[4] &&
-          displayXorO[3] == displayXorO[5]) {
-        _showWinningDialog(winner: displayXorO[3]);
-      }
+    if (displayXorO[6] != '' &&
+        displayXorO[6] == displayXorO[7] &&
+        displayXorO[6] == displayXorO[8]) {
+      _showWinningDialog(winner: displayXorO[6]);
+    }
 
-      if (displayXorO[6] != '' &&
-          displayXorO[6] == displayXorO[7] &&
-          displayXorO[6] == displayXorO[8]) {
-        _showWinningDialog(winner: displayXorO[6]);
-      }
+    //Columns
+    if (displayXorO[0] != '' &&
+        displayXorO[0] == displayXorO[3] &&
+        displayXorO[0] == displayXorO[6]) {
+      _showWinningDialog(winner: displayXorO[0]);
+    }
 
-      //Columns
-      if (displayXorO[0] != '' &&
-          displayXorO[0] == displayXorO[3] &&
-          displayXorO[0] == displayXorO[6]) {
-        _showWinningDialog(winner: displayXorO[0]);
-      }
+    if (displayXorO[1] != '' &&
+        displayXorO[1] == displayXorO[4] &&
+        displayXorO[1] == displayXorO[7]) {
+      _showWinningDialog(winner: displayXorO[1]);
+    }
 
-      if (displayXorO[1] != '' &&
-          displayXorO[1] == displayXorO[4] &&
-          displayXorO[1] == displayXorO[7]) {
-        _showWinningDialog(winner: displayXorO[1]);
-      }
+    if (displayXorO[2] != '' &&
+        displayXorO[2] == displayXorO[5] &&
+        displayXorO[2] == displayXorO[8]) {
+      _showWinningDialog(winner: displayXorO[2]);
+    }
 
-      if (displayXorO[2] != '' &&
-          displayXorO[2] == displayXorO[5] &&
-          displayXorO[2] == displayXorO[8]) {
-        _showWinningDialog(winner: displayXorO[2]);
-      }
+    //Diagonals
+    if (displayXorO[0] != '' &&
+        displayXorO[0] == displayXorO[4] &&
+        displayXorO[0] == displayXorO[8]) {
+      _showWinningDialog(winner: displayXorO[0]);
+    }
 
-      //Diagonals
-      if (displayXorO[0] != '' &&
-          displayXorO[0] == displayXorO[4] &&
-          displayXorO[0] == displayXorO[8]) {
-        _showWinningDialog(winner: displayXorO[0]);
-      }
+    if (displayXorO[2] != '' &&
+        displayXorO[2] == displayXorO[4] &&
+        displayXorO[2] == displayXorO[6]) {
+      _showWinningDialog(winner: displayXorO[2]);
+    }
 
-      if (displayXorO[2] != '' &&
-          displayXorO[2] == displayXorO[4] &&
-          displayXorO[2] == displayXorO[6]) {
-        _showWinningDialog(winner: displayXorO[2]);
-      }
-
-      if (_isBoardFull(displayXorO) && playIsEnabled) {
-        setState(() {
-          playIsEnabled = false;
-        });
-        _showDialog(title: 'Reload!', onTap: _clearBoard);
-      }
-
+    if (_isBoardFull(displayXorO) && playIsEnabled) {
+      setState(() {
+        playIsEnabled = false;
+      });
+      _showDialog(title: 'Reload!', onTap: _clearBoard);
+    }
   }
 
   void _clearBoard() {
@@ -429,18 +430,19 @@ class _TasksBodyState extends State<TasksBody> {
       playIsEnabled = false;
     });
 
-    _showDialog(
-      title: 'Winner is Player $winner',
-      onTap: () {
-        if (winner == 'O') {
-          _addTaskToCompleteSection();
-          _removeAssignedTaskWhenTimerEnded();
-        } else {
-          _clearBoard();
-        }
-
-      },
-    );
+    if (!playIsEnabled) {
+      _showDialog(
+        title: 'Winner is Player $winner',
+        onTap: () {
+          if (winner == 'O') {
+            _addTaskToCompleteSection();
+            _removeAssignedTaskWhenTimerEnded();
+          } else {
+            _clearBoard();
+          }
+        },
+      );
+    }
   }
 
   void _showDialog({required String title, void Function()? onTap}) {
